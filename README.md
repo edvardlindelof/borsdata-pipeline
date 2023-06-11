@@ -1,7 +1,7 @@
 # Börsdata pipeline
 Software-defined assets derived from [Börsdata](https://borsdata.se/en) excel files.
 
-(Disclaimer: no real data is included in this repository — only mock data of the correct format, created for testing purposes — populating the pipeline with real data requires a Börsdata subscription.)
+(Disclaimer: no real data is included in this repository – only mock data of the correct format, created for testing purposes – populating the pipeline with real data requires a Börsdata subscription.)
 
 
 ## Install
