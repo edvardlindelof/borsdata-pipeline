@@ -11,7 +11,7 @@ SHEET_NAMES = 'Info Year R12 Quarter PriceDay PriceWeek PriceMonth'.split()
 @asset(io_manager_key='borsdata_input_manager')
 def files():
     """Börsdata excel files"""
-    return sorted(glob('data/*.xlsx'))
+    return sorted(glob('borsdata-files/samples/*.xlsx'))
 
 @multi_asset(
     outs={
