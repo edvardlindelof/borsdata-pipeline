@@ -1,23 +1,33 @@
+from functools import partial
 from glob import glob
 
-from dagster import asset, multi_asset, AssetOut
+from dagster import (
+    asset as _asset,
+    multi_asset,
+    AssetOut,
+    StaticPartitionsDefinition,
+    OpExecutionContext
+)
 import numpy as np
 import pandas as pd
 
 
 SHEET_NAMES = 'Info Year R12 Quarter PriceDay PriceWeek PriceMonth'.split()
+directory_partitions = StaticPartitionsDefinition(glob('borsdata-files/*'))
+asset = partial(_asset, partitions_def=directory_partitions)
 
 
 @asset(io_manager_key='borsdata_input_manager')
-def files():
+def files(context: OpExecutionContext):
     """Börsdata excel files"""
-    return sorted(glob('borsdata-files/samples/*.xlsx'))
+    return sorted(glob(f'{context.partition_key}/*.xlsx'))
 
 @multi_asset(
     outs={
         f'raw_{sn.lower()}_sheets': AssetOut(description=f'"{sn}" sheets')
         for sn in SHEET_NAMES
-    }
+    },
+    partitions_def=directory_partitions
 )
 def sheets(files):
     return tuple(
@@ -50,4 +60,3 @@ def monthly_prices(raw_pricemonth_sheets: pd.DataFrame):
         .rename(columns=df.loc[0, 'A':'F'].to_dict())
         .sort_values(['filename', 'Date'])
     )
-

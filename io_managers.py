@@ -67,4 +67,3 @@ def excel_input_manager(context: InitResourceContext):
     return ExcelInputManager(  # set default path same way as fs_io_manager
         base_dir=_check.not_none(context.instance).storage_directory()
     )
-

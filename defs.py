@@ -10,4 +10,3 @@ defs = Definitions(
         'borsdata_input_manager': excel_input_manager
     }
 )
-
