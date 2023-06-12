@@ -33,10 +33,6 @@ def pandas_csv_io_manager(context: InitResourceContext):
 
 class ExcelInputManager(PickledObjectFilesystemIOManager):
 
-    def __init__(self, sheet_names, base_dir=None, **kwargs):
-        super().__init__(base_dir, **kwargs)
-        self.sheet_names = sheet_names
-
     def dump_to_path(self, context: OutputContext, obj: Any, path: UPath):
         with open(path, "w") as f:
             f.write('\n'.join(obj))
@@ -47,12 +43,15 @@ class ExcelInputManager(PickledObjectFilesystemIOManager):
         return {
             fp: {
                 sheet_name: df.rename(columns=self._colnum2colname)
-                for sheet_name, df in pd.read_excel(
-                    fp, self.sheet_names, header=None
-                ).items()
+                for sheet_name, df in self._read_all_sheets(fp, header=None).items()
             }
             for fp in filepaths
         }
+
+    @staticmethod
+    def _read_all_sheets(path, **read_kwargs):
+        excel_file = pd.ExcelFile(path)
+        return pd.read_excel(excel_file, excel_file.sheet_names, **read_kwargs)
 
     @staticmethod
     def _colnum2colname(i):
@@ -63,11 +62,9 @@ class ExcelInputManager(PickledObjectFilesystemIOManager):
     def get_metadata(self, context: OutputContext, obj: Any): # -> Dict[str, MetadataValue[PackableValue]]:
         return {'filenames': obj}
 
-@io_manager(config_schema={'sheet_names': [str]})
+@io_manager
 def excel_input_manager(context: InitResourceContext):
-    return ExcelInputManager(
-        sheet_names=context.resource_config['sheet_names'],
-        # set default path same way as fs_io_manager
+    return ExcelInputManager(  # set default path same way as fs_io_manager
         base_dir=_check.not_none(context.instance).storage_directory()
     )
 
