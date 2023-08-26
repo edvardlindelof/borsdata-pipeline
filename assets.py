@@ -74,3 +74,9 @@ def daily_closes(raw_priceday_sheets: pd.DataFrame, company_info: pd.DataFrame):
         .pivot_table(index='Date', columns='Company', values='Closeprice')
         .reset_index()
     )
+
+daily_closeprice_plot_asset = define_dagstermill_asset(
+    name='daily_closeprice_plot',
+    notebook_path='notebooks/daily_closeprice_plot.ipynb',
+    ins={'df': AssetIn('daily_closes')}
+)
