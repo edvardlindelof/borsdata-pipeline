@@ -2,3 +2,4 @@ dagster
 dagit
 pandas
 openpyxl
+matplotlib

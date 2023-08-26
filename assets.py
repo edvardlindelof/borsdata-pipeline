@@ -2,12 +2,14 @@ from functools import partial
 from glob import glob
 
 from dagster import (
+    AssetIn,
     asset as _asset,
     multi_asset,
     AssetOut,
     StaticPartitionsDefinition,
     OpExecutionContext
 )
+from dagstermill import define_dagstermill_asset
 import numpy as np
 import pandas as pd
 
@@ -59,4 +61,16 @@ def monthly_prices(raw_pricemonth_sheets: pd.DataFrame):
         df.loc[df['A'] != 'Date']
         .rename(columns=df.loc[0, 'A':'F'].to_dict())
         .sort_values(['filename', 'Date'])
+    )
+
+@asset
+def daily_closes(raw_priceday_sheets: pd.DataFrame, company_info: pd.DataFrame):
+    """Daily closes for all companies"""
+    df = raw_priceday_sheets
+    return (
+        df.loc[df['A'] != 'Date']
+        .rename(columns=df.loc[0, 'A':'F'].to_dict())
+        .merge(company_info, 'left', 'filename')
+        .pivot_table(index='Date', columns='Company', values='Closeprice')
+        .reset_index()
     )
