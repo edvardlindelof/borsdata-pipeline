@@ -1,6 +1,6 @@
 from typing import Any
 
-from dagster import OutputContext, io_manager, InitResourceContext, _check
+from dagster import MetadataValue, OutputContext, io_manager, InitResourceContext, _check
 from dagster._core.execution.context.input import InputContext
 from dagster._core.execution.context.output import OutputContext
 from dagster._core.storage.fs_io_manager import PickledObjectFilesystemIOManager
@@ -65,5 +65,28 @@ class ExcelInputManager(PickledObjectFilesystemIOManager):
 @io_manager
 def excel_input_manager(context: InitResourceContext):
     return ExcelInputManager(  # set default path same way as fs_io_manager
+        base_dir=_check.not_none(context.instance).storage_directory()
+    )
+
+
+class HTMLIOManager(PickledObjectFilesystemIOManager):
+
+    def dump_to_path(self, context: OutputContext, obj: str, path: UPath):
+        with open(path.with_suffix('.html'), 'w') as f:
+            f.write(obj)
+
+    def load_from_path(self, context: InputContext, path: UPath) -> str:
+        with open(path.with_suffix('.html'), 'r') as f:
+            html = f.read()
+        return html
+
+    def get_metadata(self, context: OutputContext, obj: Any): # -> Dict[str, MetadataValue[PackableValue]]:
+        # TODO call _get_paths_for_partitions if asset is partitioned, see handle_output code
+        path = self._get_path(context).with_suffix('.html')
+        return {'Link': MetadataValue.url(f'file:///{path}')}
+
+@io_manager
+def html_io_manager(context: InitResourceContext):
+    return HTMLIOManager(  # set default path same way as fs_io_manager
         base_dir=_check.not_none(context.instance).storage_directory()
     )

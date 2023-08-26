@@ -10,6 +10,8 @@ from dagster import (
     OpExecutionContext
 )
 from dagstermill import define_dagstermill_asset
+import nbconvert
+import nbformat
 import numpy as np
 import pandas as pd
 
@@ -75,8 +77,28 @@ def daily_closes(raw_priceday_sheets: pd.DataFrame, company_info: pd.DataFrame):
         .reset_index()
     )
 
+def define_notebook_html_asset(name, dagstermill_asset):
+    def _compute_fn(notebook):
+        html, _ = (
+            nbconvert.HTMLExporter()
+            .from_notebook_node(nbformat.reads(notebook.decode(), as_version=4))
+        )
+        return html
+    return _asset(
+        name=name,
+        io_manager_key='notebook_html_io_manager',
+        ins={'notebook': AssetIn(dagstermill_asset.key)}
+    )(
+        _compute_fn
+    )
+
 daily_closeprice_plot_asset = define_dagstermill_asset(
     name='daily_closeprice_plot',
     notebook_path='notebooks/daily_closeprice_plot.ipynb',
     ins={'df': AssetIn('daily_closes')}
+)
+
+daily_closeprice_plot_html_asset = define_notebook_html_asset(
+    name='daily_closeprice_plot_as_html',
+    dagstermill_asset=daily_closeprice_plot_asset
 )

@@ -11,7 +11,6 @@ python -m venv venv && source venv/bin/activate && pip install -r requirements.t
 
 
 ## TODO
-- Analysis notebook asset
 - Asset partitioning over directories of excel files
 - Code formatting suite
 - PoC of mapping directory partitions to stock symbol partitions
