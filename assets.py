@@ -84,7 +84,7 @@ def define_notebook_html_asset(name, dagstermill_asset):
             .from_notebook_node(nbformat.reads(notebook.decode(), as_version=4))
         )
         return html
-    return _asset(
+    return asset(
         name=name,
         io_manager_key='notebook_html_io_manager',
         ins={'notebook': AssetIn(dagstermill_asset.key)}
@@ -95,7 +95,8 @@ def define_notebook_html_asset(name, dagstermill_asset):
 daily_closeprice_plot_asset = define_dagstermill_asset(
     name='daily_closeprice_plot',
     notebook_path='notebooks/daily_closeprice_plot.ipynb',
-    ins={'df': AssetIn('daily_closes')}
+    ins={'df': AssetIn('daily_closes')},
+    partitions_def=directory_partitions
 )
 
 daily_closeprice_plot_html_asset = define_notebook_html_asset(
